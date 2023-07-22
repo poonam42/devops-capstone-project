@@ -61,18 +61,24 @@ def create_accounts():
 # LIST ALL ACCOUNTS
 ######################################################################
 
-def test_get_account_list(self):
-    """It should Get a list of Accounts"""
-    self._create_accounts(5)
-    resp = self.client.get(BASE_URL)
-    self.assertEqual(resp.status_code, status.HTTP_200_OK)
-    data = resp.get_json()
-    self.assertEqual(len(data), 5)
+
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+    """
+    List all Accounts
+    This endpoint will list all Accounts
+    """
+    app.logger.info("Request to list Accounts")
+    accounts = Account.all()
+    account_list = [account.serialize() for account in accounts]
+    app.logger.info("Returning [%s] accounts", len(account_list))
+    return jsonify(account_list), status.HTTP_200_OK
 
 
 ######################################################################
 # READ AN ACCOUNT
 ######################################################################
+
 
 @app.route("/accounts/<int:account_id>", methods=["GET"])
 def get_accounts(account_id):
@@ -90,6 +96,7 @@ def get_accounts(account_id):
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
+
 
 @app.route("/accounts/<int:account_id>", methods=["PUT"])
 def update_accounts(account_id):
@@ -110,11 +117,18 @@ def update_accounts(account_id):
 # DELETE AN ACCOUNT
 ######################################################################
 
-def test_delete_account(self):
-    """It should Delete an Account"""
-    account = self._create_accounts(1)[0]
-    resp = self.client.delete(f"{BASE_URL}/{account.id}")
-    self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+@app.route("/accounts/<int:account_id>", methods=["DELETE"])
+def delete_accounts(account_id):
+    """
+    Delete an Account
+    This endpoint will delete an Account based on the account_id that is requested
+    """
+    app.logger.info("Request to delete an Account with id: %s", account_id)
+    account = Account.find(account_id)
+    if account:
+        account.delete()
+    return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
